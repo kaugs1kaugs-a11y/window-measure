@@ -325,12 +325,11 @@ function updateCal(px){
   const bar=document.getElementById('calbar-inner');
   const maxW=document.getElementById('calbar').offsetWidth-4;
   bar.style.width=Math.min(calPxWidth,maxW)+'px';
-  const inches=(calPxWidth/pxPerInch*CAL_REF_INCHES/(calPxWidth/calPxWidth)).toFixed(2);
-  // show what real inches the bar represents at current pxPerInch
-  const realIn=(calPxWidth/pxPerInch).toFixed(2);
-  document.getElementById('calinches').textContent=realIn+'" on screen';
-  document.getElementById('calbartext').textContent=realIn+'"';
+  // Just show the target — user drags until bar matches the physical object
+  document.getElementById('calinches').textContent='Drag until bar = 6.14" (dollar bill)';
+  document.getElementById('calbartext').textContent='← drag to match →';
 }
+
 function closeCal(save){
   if(save){
     // user says the bar = CAL_REF_INCHES, so pxPerInch = calPxWidth / CAL_REF_INCHES
