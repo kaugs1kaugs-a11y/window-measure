@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Window Measure</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#000;font-family:system-ui,sans-serif;overflow:hidden;width:100vw;height:100vh;touch-action:none}
+#wrap{position:relative;width:100vw;height:100vh;overflow:hidden}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#svglay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+#overlay{position:absolute;inset:0;pointer-events:none;z-index:6}
+.pin{position:absolute;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;display:none}
+#topbar{position:absolute;top:0;left:0;right:0;padding:14px 14px 11px;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:space-between;z-index:10}
+#topbar span{color:#fff;font-weight:600;font-size:15px}
+#topbar div{display:flex;gap:8px}
+.tbtn{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer}
+#toggles{position:absolute;top:62px;left:12px;right:12px;display:flex;gap:8px;z-index:10}
+.tog{border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:20px;padding:7px 14px;font-size:12px;cursor:pointer;transition:background .2s}
+#calbtn{border:1px solid rgba(255,200,0,0.6);color:#ffd700;border-radius:20px;padding:7px 14px;font-size:12px;cursor:pointer;background:rgba(255,200,0,0.12);margin-left:auto}
+#dimbox{position:absolute;top:112px;left:12px;right:12px;background:rgba(0,0,0,0.78);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:13px 16px;z-index:10;display:none}
+#dimrow{display:flex;justify-content:space-between;align-items:flex-start}
+#dimval{color:#fff;font-size:26px;font-weight:700;margin:2px 0 0;letter-spacing:.3px}
+#dimlabel{color:#aaa;font-size:11px;text-transform:uppercase;letter-spacing:.8px}
+#archval{color:#F6AD55;font-size:13px;margin-top:4px;display:none}
+#snapbadge{background:rgba(104,211,145,0.18);border:1px solid #68D391;border-radius:10px;padding:7px 11px;text-align:right;display:none;min-width:120px}
+#addBtn{margin-top:10px;width:100%;background:rgba(99,179,237,0.22);border:1px solid #63B3ED;color:#63B3ED;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;font-weight:500}
+#btnarea{position:absolute;bottom:120px;left:12px;right:12px;z-index:10;display:flex;flex-direction:column;gap:9px}
+#apexbtn{background:rgba(246,173,85,0.88);border:none;color:#000;border-radius:12px;padding:15px;font-size:14px;font-weight:700;cursor:pointer;display:none}
+#pingrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pinbtn{border-radius:12px;padding:16px 8px;font-size:13px;font-weight:600;cursor:pointer;color:#fff;border:2px solid rgba(255,255,255,0.3);background:rgba(0,0,0,0.7)}
+#hint{color:rgba(255,255,255,0.45);font-size:11px;text-align:center}
+#schedule{position:absolute;inset:0;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);z-index:20;display:none;flex-direction:column}
+#schhead{padding:16px 16px 12px;border-bottom:.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:space-between}
+#schhead span{color:#fff;font-weight:600;font-size:16px}
+#schlist{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.schcard{background:rgba(255,255,255,0.07);border:.5px solid rgba(255,255,255,0.18);border-radius:12px;padding:12px 14px}
+.schcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.schtag{color:#63B3ED;font-weight:700;font-size:14px}
+.schtype{font-size:11px;border-radius:6px;padding:3px 8px}
+.schtype.matched{background:rgba(104,211,145,0.2);color:#68D391;border:1px solid #68D391}
+.schtype.custom{background:rgba(255,255,255,0.1);color:#aaa}
+.schdim{color:#fff;font-size:18px;font-weight:600;margin:0 0 3px}
+.schsub{color:#aaa;font-size:12px;margin:0}
+.schro{color:#63B3ED;font-size:11px;margin:3px 0 0}
+.rembtn{margin-top:8px;background:rgba(252,129,129,0.15);border:1px solid rgba(252,129,129,0.4);color:#FC8181;border-radius:6px;padding:5px 11px;font-size:11px;cursor:pointer}
+#schfoot{padding:12px 16px 28px;border-top:.5px solid rgba(255,255,255,0.15);display:none}
+#copybtn{width:100%;background:rgba(99,179,237,0.2);border:1px solid #63B3ED;color:#63B3ED;border-radius:10px;padding:13px;font-size:14px;cursor:pointer;font-weight:500}
+#caloverlay{position:absolute;inset:0;background:rgba(0,0,0,0.88);z-index:30;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;gap:16px}
+#caloverlay p{color:#fff;font-size:15px;line-height:1.6}
+#caloverlay small{color:#aaa;font-size:12px;line-height:1.6}
+#calbar{width:100%;height:56px;background:rgba(255,255,255,0.08);border:2px dashed #ffd700;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#ffd700;font-size:13px;font-weight:600;margin:4px 0;position:relative}
+#calbar-inner{position:absolute;left:0;top:0;bottom:0;background:rgba(255,215,0,0.25);border-radius:8px;transition:width .1s}
+#camprompt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:14px;padding:28px;text-align:center;z-index:30;background:#111}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="camprompt">
+    <span style="font-size:52px">📷</span>
+    <p style="font-size:17px;font-weight:600">Camera access needed</p>
+    <p id="camstatus" style="font-size:13px;color:#aaa;line-height:1.6;max-width:300px">Tap below to start.</p>
+    <button onclick="startCam()" style="background:#63B3ED;border:none;color:#000;border-radius:10px;padding:14px 30px;font-size:15px;font-weight:700;cursor:pointer">Start Camera</button>
+    <p style="font-size:12px;color:#555;max-width:280px;line-height:1.5">If blocked: Chrome menu → Settings → Site settings → Camera → allow this site.</p>
+  </div>
+
+  <video id="vid" autoplay playsinline muted></video>
+
+  <svg id="svglay"></svg>
+
+  <div id="overlay">
+    <div id="pin1dot" class="pin" style="width:26px;height:26px;border:3px solid #68D391;background:rgba(104,211,145,0.3)"></div>
+    <div id="pin2dot" class="pin" style="width:26px;height:26px;border:3px solid #FC8181;background:rgba(252,129,129,0.3)"></div>
+    <div id="apexdot" class="pin" style="width:20px;height:20px;border:3px solid #F6AD55;background:rgba(246,173,85,0.3)"></div>
+    <div id="reticle" style="position:absolute;transform:translate(-50%,-50%);pointer-events:none">
+      <svg id="reticlesvg" viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+        <!-- black shadow lines for contrast -->
+        <line x1="40" y1="2" x2="40" y2="78" stroke="black" stroke-width="5" opacity=".7"/>
+        <line x1="2" y1="40" x2="78" y2="40" stroke="black" stroke-width="5" opacity=".7"/>
+        <!-- bright white lines -->
+        <line x1="40" y1="2" x2="40" y2="78" stroke="white" stroke-width="2.5"/>
+        <line x1="2" y1="40" x2="78" y2="40" stroke="white" stroke-width="2.5"/>
+        <!-- center ring with black outline -->
+        <circle cx="40" cy="40" r="9" stroke="black" stroke-width="4" fill="none" opacity=".7"/>
+        <circle cx="40" cy="40" r="9" stroke="white" stroke-width="2" fill="none"/>
+        <!-- corner brackets -->
+        <polyline points="10,22 10,10 22,10" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="10,22 10,10 22,10" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <polyline points="58,10 70,10 70,22" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="58,10 70,10 70,22" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <polyline points="10,58 10,70 22,70" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="10,58 10,70 22,70" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <polyline points="58,70 70,70 70,58" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="58,70 70,70 70,58" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <div id="topbar">
+    <span>📐 Window Measure</span>
+    <div>
+      <button class="tbtn" onclick="openSchedule()">Schedule (<span id="schcount">0</span>)</button>
+      <button class="tbtn" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <div id="toggles">
+    <button class="tog" id="radtog" onclick="toggleRadius()" style="background:rgba(0,0,0,0.6)">⌒ Radius</button>
+    <button class="tog" id="rotog" onclick="toggleRO()" style="background:rgba(0,0,0,0.6)">+½" RO</button>
+    <button id="calbtn" onclick="openCal()">⚙ Calibrate</button>
+  </div>
+
+  <div id="dimbox">
+    <div id="dimrow">
+      <div>
+        <div id="dimlabel">Measured Opening</div>
+        <div id="dimval">— × —</div>
+        <div id="archval"></div>
+      </div>
+      <div id="snapbadge">
+        <p style="color:#68D391;font-size:10px;font-weight:600;text-transform:uppercase;margin-bottom:2px">Std Match</p>
+        <p id="snapdim" style="color:#fff;font-size:13px;font-weight:600;margin-bottom:1px"></p>
+        <p id="snaptype" style="color:#aaa;font-size:11px"></p>
+      </div>
+    </div>
+    <button id="addBtn" onclick="addToSchedule()">+ Add to Window Schedule</button>
+  </div>
+
+  <div id="btnarea">
+    <button id="apexbtn" onclick="pinApex()">⌒ Pin Arch Apex</button>
+    <div id="pingrid">
+      <button class="pinbtn" id="pb1" onclick="pinCorner(1)">○ Pin Corner 1</button>
+      <button class="pinbtn" id="pb2" onclick="pinCorner(2)">○ Pin Corner 2</button>
+    </div>
+    <div id="hint">Aim crosshair at a corner → tap to pin</div>
+  </div>
+
+  <div id="schedule">
+    <div id="schhead">
+      <span>Window Schedule</span>
+      <button class="tbtn" onclick="closeSchedule()">Close</button>
+    </div>
+    <div id="schlist"></div>
+    <div id="schfoot">
+      <p style="color:#aaa;font-size:12px;text-align:center;margin-bottom:8px" id="schfootlabel"></p>
+      <button id="copybtn" onclick="copySchedule()">Copy Schedule to Clipboard</button>
+    </div>
+  </div>
+
+  <div id="caloverlay">
+    <p style="font-size:18px;font-weight:600;color:#ffd700">⚙ Calibrate Scale</p>
+    <p>Hold a dollar bill (6.14" wide) or a tape measure flat against your screen and drag the slider until the yellow bar matches the known length.</p>
+    <div id="calbar"><div id="calbar-inner"></div><span id="calbartext">6.14"</span></div>
+    <input type="range" min="40" max="400" value="200" id="calslider" style="width:100%" oninput="updateCal(this.value)">
+    <p id="calinches" style="color:#ffd700;font-size:20px;font-weight:700"></p>
+    <small>Adjust until the bar equals a real object of known width, then tap Save.</small>
+    <div style="display:flex;gap:12px;margin-top:4px">
+      <button onclick="closeCal(false)" style="flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;padding:13px;font-size:14px;cursor:pointer">Cancel</button>
+      <button onclick="closeCal(true)" style="flex:1;background:#ffd700;border:none;color:#000;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SNAP_TOL = 1.5;
+const build = (ws,hs) => { const o=[]; for(const w of ws) for(const h of hs) o.push([w,h]); return o; };
+const STD = {
+  "Single Hung": build([19.125,26.5,37,48,53.125,60,73,74],[26,38,49,49.5,50,63,76,78,79,84,96]),
+  "Slider":      build([37,48,53.125,60,73,74,96,109,110,120,144],[26,38,49,49.5,50,63,76,78,79,84,96]),
+  "Picture":     build([19.125,26.5,37,48,53.125,60,73,74,96,120],[26,38,49,49.5,50,63,76,78,79,84,96,120]),
+  "SGD":         build([60,73,74,96,109,110,120,144],[76,78,79,84,96,120]),
+};
+
+function snapCheck(w,h){
+  for(const [type,sizes] of Object.entries(STD))
+    for(const [sw,sh] of sizes){
+      if(Math.abs(w-sw)<=SNAP_TOL&&Math.abs(h-sh)<=SNAP_TOL) return{type,w:sw,h:sh};
+      if(Math.abs(w-sh)<=SNAP_TOL&&Math.abs(h-sw)<=SNAP_TOL) return{type,w:sh,h:sw};
+    }
+  return null;
+}
+
+// pxPerInch: calibrated pixels per inch. Default = devicePixelRatio * 96 but user can override.
+let pxPerInch = window.devicePixelRatio * 96;
+let calPxWidth = 200; // slider px value during calibration
+const CAL_REF_INCHES = 6.14; // dollar bill width
+
+let pins=[],apexPin=null,radiusMode=false,roOffset=false,schedule=[],dims=null,snapResult=null;
+let cx=0,cy=0;
+
+const vid=document.getElementById('vid');
+const svglay=document.getElementById('svglay');
+const reticle=document.getElementById('reticle');
+const pin1dot=document.getElementById('pin1dot');
+const pin2dot=document.getElementById('pin2dot');
+const apexdot=document.getElementById('apexdot');
+const dimbox=document.getElementById('dimbox');
+const apexbtn=document.getElementById('apexbtn');
+
+function placeReticle(){
+  cx=window.innerWidth/2; cy=window.innerHeight/2;
+  reticle.style.left=cx+'px'; reticle.style.top=cy+'px';
+}
+placeReticle();
+window.addEventListener('resize',placeReticle);
+
+// Camera
+const camprompt=document.getElementById('camprompt');
+const camstatus=document.getElementById('camstatus');
+function startCam(){
+  camstatus.textContent='Starting camera…';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    camstatus.textContent='Camera not supported. Use Chrome on Android.'; return;
+  }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}})
+    .then(s=>{vid.srcObject=s;vid.play();vid.style.opacity=1;camprompt.style.display='none';})
+    .catch(err=>{
+      if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')
+        camstatus.textContent='Blocked. Chrome menu → Settings → Site settings → Camera → allow, then retry.';
+      else if(err.name==='NotFoundError') camstatus.textContent='No camera found.';
+      else camstatus.textContent='Error: '+err.message;
+    });
+}
+startCam();
+
+function toIn(px){ return Math.round((px/pxPerInch)*10)/10; }
+
+function calcDims(){
+  if(pins.length<2) return;
+  const p1=pins[0],p2=pins[1];
+  let w=toIn(Math.abs(p2.x-p1.x));
+  let h=toIn(Math.abs(p2.y-p1.y));
+  let archH=null;
+  if(apexPin&&radiusMode){ const midY=(p1.y+p2.y)/2; archH=toIn(Math.abs(apexPin.y-midY)); }
+  if(roOffset){ w=Math.round((w+0.5)*10)/10; h=Math.round((h+0.5)*10)/10; }
+  dims={w,h,archH};
+  snapResult=snapCheck(w,h);
+  renderDims(); drawRect();
+}
+
+function renderDims(){
+  if(!dims) return;
+  dimbox.style.display='block';
+  document.getElementById('dimlabel').textContent='Measured Opening'+(roOffset?' (RO +½″)':'');
+  document.getElementById('dimval').textContent=dims.w+'" × '+dims.h+'"';
+  const av=document.getElementById('archval');
+  dims.archH?(av.style.display='block',av.textContent='Arch rise: '+dims.archH+'"'):(av.style.display='none');
+  const sb=document.getElementById('snapbadge');
+  if(snapResult){sb.style.display='block';document.getElementById('snapdim').textContent=snapResult.w+'" × '+snapResult.h+'"';document.getElementById('snaptype').textContent=snapResult.type;}
+  else sb.style.display='none';
+}
+
+function drawRect(){
+  svglay.innerHTML='';
+  if(pins.length<2) return;
+  const p1=pins[0],p2=pins[1];
+  const x=Math.min(p1.x,p2.x),y=Math.min(p1.y,p2.y),w=Math.abs(p2.x-p1.x),h=Math.abs(p2.y-p1.y);
+  const ns='http://www.w3.org/2000/svg';
+  const mk=(tag,attrs)=>{const e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));svglay.appendChild(e);return e;};
+  mk('rect',{x,y,width:w,height:h,fill:'rgba(99,179,237,0.1)',stroke:'#63B3ED','stroke-width':'2.5','stroke-dasharray':'8,5',rx:'2'});
+  if(apexPin&&radiusMode) mk('path',{d:`M ${x} ${y} Q ${apexPin.x} ${apexPin.y} ${x+w} ${y}`,fill:'none',stroke:'#F6AD55','stroke-width':'2.5','stroke-dasharray':'6,5'});
+  // dim tick lines
+  [[p1.x,y-22,p2.x,y-22],[p1.x,y-27,p1.x,y-17],[p2.x,y-27,p2.x,y-17],
+   [x+w+22,p1.y,x+w+22,p2.y],[x+w+17,p1.y,x+w+27,p1.y],[x+w+17,p2.y,x+w+27,p2.y]]
+  .forEach(([x1,y1,x2,y2])=>mk('line',{x1,y1,x2,y2,stroke:'#63B3ED','stroke-width':'2'}));
+}
+
+function showPin(el,x,y,vis){el.style.left=x+'px';el.style.top=y+'px';el.style.display=vis?'block':'none';}
+
+function pinCorner(n){
+  const pos={x:cx,y:cy};
+  const pb1=document.getElementById('pb1'),pb2=document.getElementById('pb2');
+  if(n===1){
+    pins[0]=pos;pins.splice(1);apexPin=null;dims=null;snapResult=null;
+    dimbox.style.display='none';svglay.innerHTML='';
+    showPin(pin1dot,cx,cy,true);showPin(pin2dot,0,0,false);showPin(apexdot,0,0,false);
+    pb2.style.background='rgba(0,0,0,0.7)';pb2.style.borderColor='rgba(255,255,255,0.3)';pb2.textContent='○ Pin Corner 2';
+  } else {
+    pins[1]=pos;showPin(pin2dot,cx,cy,true);calcDims();
+    pb2.style.background='rgba(252,129,129,0.3)';pb2.style.borderColor='#FC8181';pb2.textContent='● Pin Corner 2 ✓';
+  }
+  pb1.style.background=pins[0]?'rgba(104,211,145,0.3)':'rgba(0,0,0,0.7)';
+  pb1.style.borderColor=pins[0]?'#68D391':'rgba(255,255,255,0.3)';
+  pb1.textContent=(pins[0]?'● ':'○ ')+'Pin Corner 1'+(pins[0]?' ✓':'');
+  updateApexBtn();
+}
+
+function pinApex(){
+  apexPin={x:cx,y:cy};showPin(apexdot,cx,cy,true);
+  apexbtn.textContent='⌒ Apex ✓';calcDims();
+}
+function updateApexBtn(){apexbtn.style.display=(radiusMode&&pins.length===2)?'block':'none';}
+
+function toggleRadius(){
+  radiusMode=!radiusMode;
+  const t=document.getElementById('radtog');
+  t.style.background=radiusMode?'rgba(246,173,85,0.85)':'rgba(0,0,0,0.6)';
+  t.style.fontWeight=radiusMode?600:400;
+  if(!radiusMode){apexPin=null;showPin(apexdot,0,0,false);}
+  updateApexBtn();calcDims();
+}
+function toggleRO(){
+  roOffset=!roOffset;
+  const t=document.getElementById('rotog');
+  t.style.background=roOffset?'rgba(99,179,237,0.85)':'rgba(0,0,0,0.6)';
+  t.style.fontWeight=roOffset?600:400;
+  calcDims();
+}
+function resetAll(){
+  pins=[];apexPin=null;dims=null;snapResult=null;
+  showPin(pin1dot,0,0,false);showPin(pin2dot,0,0,false);showPin(apexdot,0,0,false);
+  dimbox.style.display='none';svglay.innerHTML='';
+  ['pb1','pb2'].forEach((id,i)=>{const b=document.getElementById(id);b.style.background='rgba(0,0,0,0.7)';b.style.borderColor='rgba(255,255,255,0.3)';b.textContent=`○ Pin Corner ${i+1}`;});
+  apexbtn.textContent='⌒ Pin Arch Apex';updateApexBtn();
+}
+
+// Calibration
+function openCal(){
+  document.getElementById('caloverlay').style.display='flex';
+  updateCal(document.getElementById('calslider').value);
+}
+function updateCal(px){
+  calPxWidth=parseInt(px);
+  const bar=document.getElementById('calbar-inner');
+  const maxW=document.getElementById('calbar').offsetWidth-4;
+  bar.style.width=Math.min(calPxWidth,maxW)+'px';
+  const inches=(calPxWidth/pxPerInch*CAL_REF_INCHES/(calPxWidth/calPxWidth)).toFixed(2);
+  // show what real inches the bar represents at current pxPerInch
+  const realIn=(calPxWidth/pxPerInch).toFixed(2);
+  document.getElementById('calinches').textContent=realIn+'" on screen';
+  document.getElementById('calbartext').textContent=realIn+'"';
+}
+function closeCal(save){
+  if(save){
+    // user says the bar = CAL_REF_INCHES, so pxPerInch = calPxWidth / CAL_REF_INCHES
+    pxPerInch=calPxWidth/CAL_REF_INCHES;
+    calcDims();
+  }
+  document.getElementById('caloverlay').style.display='none';
+}
+
+// Schedule
+function addToSchedule(){
+  if(!dims) return;
+  const tag='W'+(schedule.length+1).toString().padStart(2,'0');
+  schedule.push({id:Date.now(),tag,w:dims.w,h:dims.h,archH:dims.archH,snap:snapResult,roOffset,type:snapResult?snapResult.type:'Custom'});
+  document.getElementById('schcount').textContent=schedule.length;
+}
+function openSchedule(){document.getElementById('schedule').style.display='flex';renderSchedule();}
+function closeSchedule(){document.getElementById('schedule').style.display='none';}
+function renderSchedule(){
+  const list=document.getElementById('schlist'),foot=document.getElementById('schfoot');
+  list.innerHTML='';
+  if(!schedule.length){list.innerHTML='<p style="color:#aaa;text-align:center;margin-top:40px;font-size:14px">No windows saved yet.</p>';foot.style.display='none';return;}
+  foot.style.display='block';
+  document.getElementById('schfootlabel').textContent=schedule.length+' window'+(schedule.length!==1?'s':'')+' in schedule';
+  schedule.forEach(win=>{
+    const d=document.createElement('div');d.className='schcard';
+    d.innerHTML=`<div class="schcard-top"><span class="schtag">${win.tag}</span><span class="schtype ${win.snap?'matched':'custom'}">${win.type}</span></div>
+    <p class="schdim">${win.w}" × ${win.h}"</p>
+    ${win.archH?`<p class="schsub">Arch rise: ${win.archH}"</p>`:''}
+    ${win.snap?`<p class="schsub">Std: ${win.snap.w}" × ${win.snap.h}"</p>`:''}
+    ${win.roOffset?`<p class="schro">+½" RO applied</p>`:''}
+    <button class="rembtn" onclick="removeWin(${win.id})">Remove</button>`;
+    list.appendChild(d);
+  });
+}
+function removeWin(id){schedule=schedule.filter(w=>w.id!==id);document.getElementById('schcount').textContent=schedule.length;renderSchedule();}
+function copySchedule(){
+  const txt=schedule.map(w=>`${w.tag}: ${w.w}" × ${w.h}"${w.archH?` (arch ${w.archH}")`:''}  —  ${w.type}${w.roOffset?' [RO]':''}`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>alert('Copied!')).catch(()=>alert(txt));
+}
+</script>
+</body>
+</html>
