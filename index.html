@@ -76,25 +76,21 @@ video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
     <div id="pin2dot" class="pin" style="width:26px;height:26px;border:3px solid #FC8181;background:rgba(252,129,129,0.3)"></div>
     <div id="apexdot" class="pin" style="width:20px;height:20px;border:3px solid #F6AD55;background:rgba(246,173,85,0.3)"></div>
     <div id="reticle" style="position:absolute;transform:translate(-50%,-50%);pointer-events:none">
-      <svg id="reticlesvg" viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
-        <!-- black shadow lines for contrast -->
-        <line x1="40" y1="2" x2="40" y2="78" stroke="black" stroke-width="5" opacity=".7"/>
-        <line x1="2" y1="40" x2="78" y2="40" stroke="black" stroke-width="5" opacity=".7"/>
-        <!-- bright white lines -->
-        <line x1="40" y1="2" x2="40" y2="78" stroke="white" stroke-width="2.5"/>
-        <line x1="2" y1="40" x2="78" y2="40" stroke="white" stroke-width="2.5"/>
-        <!-- center ring with black outline -->
-        <circle cx="40" cy="40" r="9" stroke="black" stroke-width="4" fill="none" opacity=".7"/>
-        <circle cx="40" cy="40" r="9" stroke="white" stroke-width="2" fill="none"/>
-        <!-- corner brackets -->
-        <polyline points="10,22 10,10 22,10" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
-        <polyline points="10,22 10,10 22,10" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <polyline points="58,10 70,10 70,22" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
-        <polyline points="58,10 70,10 70,22" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <polyline points="10,58 10,70 22,70" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
-        <polyline points="10,58 10,70 22,70" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <polyline points="58,70 70,70 70,58" stroke="black" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
-        <polyline points="58,70 70,70 70,58" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <svg id="reticlesvg" viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <line x1="60" y1="2" x2="60" y2="118" stroke="black" stroke-width="7" opacity=".7"/>
+        <line x1="2" y1="60" x2="118" y2="60" stroke="black" stroke-width="7" opacity=".7"/>
+        <line x1="60" y1="2" x2="60" y2="118" stroke="white" stroke-width="3"/>
+        <line x1="2" y1="60" x2="118" y2="60" stroke="white" stroke-width="3"/>
+        <circle cx="60" cy="60" r="12" stroke="black" stroke-width="5" fill="none" opacity=".7"/>
+        <circle cx="60" cy="60" r="12" stroke="white" stroke-width="2.5" fill="none"/>
+        <polyline points="14,32 14,14 32,14" stroke="black" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="14,32 14,14 32,14" stroke="#ffd700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <polyline points="88,14 106,14 106,32" stroke="black" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="88,14 106,14 106,32" stroke="#ffd700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <polyline points="14,88 14,106 32,106" stroke="black" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="14,88 14,106 32,106" stroke="#ffd700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <polyline points="88,106 106,106 106,88" stroke="black" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+        <polyline points="88,106 106,106 106,88" stroke="#ffd700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       </svg>
     </div>
   </div>
@@ -110,7 +106,9 @@ video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   <div id="toggles">
     <button class="tog" id="radtog" onclick="toggleRadius()" style="background:rgba(0,0,0,0.6)">⌒ Radius</button>
     <button class="tog" id="rotog" onclick="toggleRO()" style="background:rgba(0,0,0,0.6)">+½" RO</button>
-    <button id="calbtn" onclick="openCal()">⚙ Calibrate</button>
+  </div>
+  <div style="position:absolute;top:108px;right:12px;z-index:10">
+    <button id="calbtn" onclick="openCal()" style="background:rgba(255,200,0,0.2);border:1px solid #ffd700;color:#ffd700;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer">⚙ Calibrate</button>
   </div>
 
   <div id="dimbox">
